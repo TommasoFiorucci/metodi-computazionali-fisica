@@ -1,0 +1,17 @@
+# questo file python verrà importato all'interno di Es01.py nella cartella E05
+
+def somma(n):
+    """ è una funzione che calcola la somma dei primi n numeri naturali"""
+    s = n * (n + 1) / 2
+    return s
+
+def somma_rad(n):
+    """ è una funzione che calcola la somma delle radici quadrate dei
+    primi n numeri naturali"""
+    s = 0
+    for i in range(0, n + 1):
+        s = s + i**(1/2)
+    return s
+
+sys.path.append("home/lunlun/MCF/E05")
+

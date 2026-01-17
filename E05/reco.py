@@ -67,5 +67,5 @@ class Hit():
 
     #sottrae il timestamp di other al timestamp di self
 
-sys.path.append('/home/lunlun/MCF/E05')
+sys.path.append('/home/lunlun/MCF/metodi-computazionali-fisica/E05')
     

@@ -33,4 +33,4 @@ def sommatoria(n, a = 1):
         s = s + i**a
     return s
 
-sys.path.append("home/lunlun/MCF/E05")
+sys.path.append("home/lunlun/MCF/metodi-computazionali-fisica/E05")

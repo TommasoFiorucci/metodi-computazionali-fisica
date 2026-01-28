@@ -1,0 +1,3 @@
+import somme
+
+input("inserire il numero n")

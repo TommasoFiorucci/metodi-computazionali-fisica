@@ -1,0 +1,80 @@
+# esercizio 2 esercitazione 6
+
+#Partendo dalla formula per il periodo T appena ricavata, produrre uno script python che:
+
+# 1 calcoli il periodo in funzione del punto di partenza x_0
+# (utilizzando scipy.integrate.simpson);
+# 2 produca un grafico di T in funzione di x;
+# 3 ripetere l'analisi precedente per un'energia potenziale del tipo V_a(x) = k * x ** 2  e confrontare i risultati
+# 4 provare formule alternative per V(x) (rispettando la condizione di simmetria rispetto all'origine) e confrontare i risultati.
+
+# Esempi:
+# V(x) = k * x ** 4
+# V(x) = K * |x| ** (3/2)
+# 5 utilizzare il modulo argparse per permettere all'utente di scegliere le opzioni sul potenziale da visualizzare.
+
+import argparse
+import numpy as np
+import scipy as sp
+import matplotlib.pyplot as plt
+
+# creo un array contenente le coordinate spaziali x e un array contenente i valori del potenziale V(x) associati a tali coordinate
+x0 = input("Inserire il valore della coordinata x di partenza: ")
+x_0 = float(x0)
+
+m = 10 #kg
+k = 3
+
+x = np.arange(0, x_0, 0.1)
+V = k * (x ** 6)
+
+V_0 = k * (x_0 ** 6)
+# chiedo a python di calcolare il periodo di oscillazione T
+# usando la funzione scipy.integrate.simpson
+integranda = (V_0 - V)**(-1/2)
+integrale = sp.integrate.simpson(integranda, x)
+
+T = ((8 * m)**(1/2)) * integrale
+
+# descrivo l'andamento di T in funzione di x
+l = len(x)
+
+T_x = np.empty(1)
+for i in range(1, l):
+    tempo = sp.integrate.simpson(integranda[0:i], x[0:i])
+    T_x = np.append(T_x, tempo)
+
+"""facciamo il grafico di T in funzione di X0"""
+
+plt.plot(x, T_x, color = 'green')
+plt.xlabel("X_0")
+plt.ylabel("T(X_0)")
+plt.show()
+
+print(T)
+print(T_x)
+
+print(len(x))
+print(len(T_x))
+
+def parse_arguments():
+
+    parser = argparse.ArgumentParser(description = "funzione argparse")
+    parser.add_argument("-t", "--t_vs_x", action = "store_true", help = "grafico del periodo in funzione della coordinata iniziale x")
+
+    return parser.parse_args()
+
+def main():
+
+    args = parse_arguments()
+
+    if args.t_vs_x == True:
+
+        # chiedo a python di disegnare il grafico del periodo in funzione di x
+        plt.plot(x, T_x)
+        plt.xlabel("POSIZIONE")
+        plt.ylabel("PERIODO")
+
+        plt.show()
+
+main()

@@ -1,0 +1,51 @@
+import numpy as np
+import scipy as sp
+import sys, os
+
+def vin(*t):
+    
+    '''definiamo la funzione vin, cioè V input
+    t = array temporale, argomento di vin
+
+    partendo da t scriviamo l'array ti (tempo intero)
+    composto dalle parti intere degli elementi di t
+
+    usiamo ti per ottenere un array che contiene i valori della funzione vin(t)
+
+    vin(t) è una funzione periodica quadrata
+
+            /
+           |  +1  [t] = pari
+  vin(t)  <
+           |  -1  [t] = dispari
+            \
+    '''
+    
+
+    ti = np.zeros(len(t)) # ti = tempo intero
+
+    for i in range(len(t)):
+        B = 1
+        while True:                 #prendiamo un elemento di tempo 
+            d = t[i] - B   #e gli sottraiamo numeri interi
+            if d < 0:          #finchè il risultato non è negativo,
+                ti[i] = B - 1  # quando d < 0 vuol dire che tempo[i]
+                break          #è compreso tra B - 1 ed B, e che quindi
+            B = B + 1          #la parte intera di tempo[i] è uguale
+                               #a B - 1 (B-1) < tempo[i] < B ====> la
+                               #parte intera di  tempo[i] = (B-1)
+
+    v_in = np.zeros(len(ti))  # V input
+    for i in range(len(ti)):
+        r = ti[i]%2
+        if r == 0:
+            v_in[i] = 1
+        else:
+            v_in[i] = -1
+            
+    return v_in
+
+#rendiamo il programma un modulo, che può essere importato all'interno
+#di un altro codice
+
+sys.path.append('/home/lunlun/MCF/metodi-computazionali-fisica/E08')

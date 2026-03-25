@@ -1,0 +1,165 @@
+import numpy as np
+import scipy as sp
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#leggiamo i file csv
+
+tab1 = pd.read_csv('data_sample1.csv') #tabella 1
+tab2 = pd.read_csv('data_sample2.csv') #tabella 2
+tab3 = pd.read_csv('data_sample3.csv') #tabella 3
+
+print(tab1, 'tabella 1')
+#otteniamo gli array contenenti le ampiezze del segnale e gli istanti
+#in cui vengono effettuati i campionamenti
+
+tempo = tab1['time']
+ampiezza1 = tab1['meas']
+ampiezza2 = tab2['meas']
+ampiezza3 = tab3['meas']
+
+#disegnamo il grafico dell'ampiezza in funzione del tempo
+
+fig, ax = plt.subplots(1, 3, figsize=(18,6))
+
+ax[0].plot(tempo, ampiezza1)
+ax[0].set_title('SEGNALE 1')
+ax[0].set_xlabel('TEMPO')
+ax[0].set_ylabel('AMPIEZZA')
+
+ax[1].plot(tempo, ampiezza2, color='orange')
+ax[1].set_title('SEGNALE 2')
+ax[1].set_xlabel('TEMPO')
+ax[1].set_ylabel('AMPIEZZA')
+
+ax[2].plot(tempo, ampiezza3, color='green')
+ax[2].set_title('SEGNALE 3')
+ax[2].set_xlabel('TEMPO')
+ax[2].set_ylabel('AMPIEZZA')
+
+plt.show()
+
+#calcoliamo le trasformate di Fourier dei segnali
+#sp.fft.fft() funziona solamente su array numpy, mentre ampiezza1(2;3) sono
+#array pandas
+#per far funzionare il comando dobiamo convertire questi array in array numpy
+
+#calcoliamo le differenze temporali alle quali vogliamo prendere le frequenze
+#campionate
+
+dt1 = tab1['time'][1] - tab1['time'][0]
+dt2 = tab2['time'][1] - tab2['time'][0]
+dt3 = tab3['time'][1] - tab3['time'][0]
+
+amp1 = np.array(ampiezza1)
+tras1 = sp.fft.fft(amp1) #trasformata del segnale 1
+freq1 = sp.fft.fftfreq(len(tras1),d=dt1) #frequenze di campionamento del segnale
+amp2 = np.array(ampiezza2)
+tras2 = sp.fft.fft(amp2) #trasformata del segnale 2
+freq2 = sp.fft.fftfreq(len(tras2), d=dt2)
+amp3 = np.array(ampiezza3)
+tras3 = sp.fft.fft(amp3) #trasformata del segnale 3
+freq3 = sp.fft.fftfreq(len(tras3), d=dt3)
+
+#disegnamo i grafici delle tre trasformate
+
+fig, ax = plt.subplots (1, 3, figsize=(18, 6))
+
+ax[0].plot(freq1, np.absolute(tras1)**2) #è necessario np.absolute per poter
+                                         #fare il fit della curva
+ax[0].set_title('TRASFORMATA SEGNALE 1')
+ax[0].set_xscale('log')
+ax[0].set_yscale('log')
+ax[0].set_xlabel('FREQUENZE')
+ax[0].set_ylabel('AMPIEZZA DELLA TRASFORMATA')
+
+ax[1].plot(freq2, np.absolute(tras2)**2, color='orange') #è necessario
+                                                         #np.absolute
+                                                         #per poter fare il fit
+                                                         #della curva
+ax[1].set_title('TRASFORMATA SEGNALE 2')
+ax[1].set_xscale('log')
+ax[1].set_yscale('log')
+ax[1].set_xlabel('FREQUENZE')
+ax[1].set_ylabel('AMPIEZZA DELLA TRASFORMATA')
+
+ax[2].plot(freq3, np.absolute(tras3)**2, color='green') #è necessario
+                                                        #np.absolute
+                                                        #per poter fare il fit
+                                                        #della curva
+ax[2].set_title('TRASFORMATA SEGNALE 3')
+ax[2].set_xscale('log')
+ax[2].set_yscale('log')
+ax[2].set_xlabel('FREQUENZE')
+ax[2].set_ylabel('AMPIEZZA DELLA TRASFORMATA')
+
+plt.show()
+
+#facciamo il fit dei tre spettri di potenza
+#definiamo la funzione da fittare alle trasformate
+
+def fit(x, a, b):
+    '''
+    funzione generale alla quale obbediscono le trasformate di
+    Fourier dei tre segnali, cioè le ampiezze delle loro frequenze
+
+    f(x) = a/x^b
+
+    x = frequenze
+    a = coefficiente reale | sono i coefficienti che ci permettono di fittare
+    b = coefficiente reale | la curva
+
+    b = 0 per il rumore bianco
+    b = 1 per il rumore rosa
+    b = 2 per il rumore rosso (detto anche rumore marrone)
+    '''
+    return a/(x**b)
+
+#facciamo i fit
+
+ps1 = np.array([10000, 0])
+ps2 = np.array([10000, 1])
+ps3 = np.array([10000, 2])
+at1 = np.absolute(tras1)**2 #absolute trasformata 1
+                            #valore assoluto della trasformata del segnale 1   
+at2 = np.absolute(tras2)**2 #absolute trasformata 2
+                            #valore assoluto della trasformata del segnale 2
+at3 = np.absolute(tras3)**2 #absolute trasformata 3
+                            #valore assoluto della trasformata del segnale 3
+pv1, pc1 = sp.optimize.curve_fit(fit, freq1[2:len(at1)//2], at1[2:len(at1)//2], maxfev = 2000)
+pv2, pc2 = sp.optimize.curve_fit(fit, freq2[2:len(at2)//2], at2[2:len(at2)//2], maxfev = 2000)
+pv3, pc3 = sp.optimize.curve_fit(fit, freq3[2:len(at3)//2], at3[2:len(at3)//2], maxfev = 2000)
+
+#disegnamo il fit
+
+fit1 = fit(freq1[1:len(at1)//2], pv1[0], pv1[1])
+fit2 = fit(freq2[1:len(at1)//2], pv2[0], pv2[1])
+fit3 = fit(freq3[1:len(at3)//2], pv3[0], pv3[1])
+
+fig, ax = plt.subplots(1, 3, figsize=(18, 6))
+
+ax[0].plot(freq1[1:len(at1)//2], fit1)
+ax[0].plot(freq1[:len(at1)//2], at1[:len(at1)//2])
+ax[0].set_xscale('log')
+ax[0].set_yscale('log')
+ax[0].set_title('TRASFORMATA SEGNALE 1')
+ax[0].set_xlabel('FREQUENZA')
+ax[0].set_ylabel('AMPIEZZA')
+
+ax[1].plot(freq2[1:len(at2)//2], fit2)
+ax[1].plot(freq2[:len(at2)//2], at2[:len(at2)//2])
+ax[1].set_xscale('log')
+ax[1].set_yscale('log')
+ax[1].set_title('TRASFORMATA SEGNALE 2')
+ax[1].set_xlabel('FREQUENZA')
+ax[1].set_ylabel('AMPIEZZA')
+
+ax[2].plot(freq3[1:len(at3)//2], fit3)
+ax[2].plot(freq3[:len(at3)//2], at3[:len(at3)//2])
+ax[2].set_xscale('log')
+ax[2].set_yscale('log')
+ax[2].set_title('TRASFORMATA SEGNALE 3')
+ax[2].set_xlabel('FREQUENZA')
+ax[2].set_ylabel('AMPIEZZA')
+
+plt.show()

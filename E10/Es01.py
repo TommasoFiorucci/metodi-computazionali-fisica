@@ -1,0 +1,122 @@
+# esercizio 1 esercitazione 10
+
+import random_walk as rw
+import matplotlib.pyplot as plt
+import numpy as np
+import rivelatore as ri
+
+p_s = input("Inserire un valore per il passo: ")
+passi_s = input("Inserire un numero (intero) di passi da eseguire: ")
+
+p = float(p_s)
+passi = int(passi_s) #il numero di passi deve essere intero
+
+cammini = rw.cammino(p, passi)
+
+# chiedo a python di disegnare un grafico dei punti del piano raggiunti
+# durante il cammino
+
+plt.plot(cammini[2], cammini[3])
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.show()
+
+# chiedo a python di disegnare il grafico di 5 cammini casuali dopo 10 passi
+
+for i in range(5):
+    walk = rw.cammino(p, 10)
+    plt.plot(walk[2], walk[3])
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.show()
+
+# chiedo a python di produrre il grafico di 100 cammini casuali
+# dopo 10, 100 e 1000 passi
+
+# per 10 passi
+
+for i in range(100):
+    walk = rw.cammino(p, 10)
+    plt.plot(walk[2], walk[3])
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.show()
+
+# per 100 passi
+
+for i in range(100):
+    walk = rw.cammino(p, 100)
+    plt.plot(walk[2], walk[3])
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.show()
+
+# per 1000 passi
+
+for i in range(100):
+    walk = rw.cammino(p, 1000)
+    plt.plot(walk[2], walk[3])
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.show()
+
+# calcolo lo scarto quadratico della distanza di ogni punto
+# dal punto di partenza per 5 cammini
+
+scarto = np.zeros(10)
+step = np.arange(0, 10, 1)
+
+for i in range(5):
+    walk = rw.cammino(p, 10)
+    for j in range(10):
+        scarto[j] =( (walk[2][j] - walk[2][0])**2 + (walk[3][j] - walk[3][0])**2)**(1/2)
+    plt.plot(step, scarto)
+plt.xlabel("INDICE PASSI")
+plt.ylabel("SCARTO QUADRATICO DAL PUNTO DI PARTENZA")
+
+plt.show()
+
+#produciamo un cammino in 2D ed il relativo grafico usando la
+#funzione per il secondo cammino definita nel modulo random_walk.py
+#(usando la seconda probabilità)
+
+#5 cammini con 1000 passi
+
+s = 1
+c = {}  #usiamo i dizionari per manipolare meglio i dati
+for i in range(0, 5):
+    ca = rw.cammino2(s, 100)
+    c.update({i : ca})
+
+#disegnamo il grafico dei cammini sovrapposti
+col = ('blue', 'red', 'green', 'slategrey', 'orange')
+for i in range(len(c)):
+    plt.plot(c[i][0], c[i][1], color = col[i], label = ('cammino ', i))
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.legend()
+plt.show()
+
+#disegnamo il grafico di 5 cammini usando la nuova diffusione asimmetrica
+#cioè cammino3
+
+s = 1
+sf = np.array([0.1*s, 0.01*s])
+d = {}
+for i in range(0, 5):
+    ca3 = rw.cammino3(s, sf[1])
+    d.update({i : ca3})
+#disegnamo il grafico dei mannini sovrapposti
+for i in range(len(d)):
+    plt.plot(d[i][0], d[i][1], color = col[i], label = ('cammino ', i))
+plt.title('DISTRIBUZIONE 3')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.legend()
+plt.show()
+

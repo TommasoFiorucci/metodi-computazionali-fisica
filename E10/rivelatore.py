@@ -1,0 +1,140 @@
+import numpy as np
+import sys
+import scipy as sp
+import matplotlib.pyplot as plt
+
+
+#questo è un modulo
+
+class rivelatore():
+    '''
+    classe per rappresentare un rivelatore MWPC
+
+    parametri:
+    d[cm] = spessore della camera
+    n_p = numero medio di coppie elettrone-ione generate dal passaggio di
+          una particella
+    s_u = passo, lunghezza del percorso libero medio di ogni elettrone, legato
+          solo al moto browniano delle particelle
+    s_f = componente aggiuntiva del passo, sempre rivolta verso i fili, e
+          dovuta all'effetto del campo elettrico sugli elettroni
+    1/n_r = probabilità che un elettrone venga assorbito da un atomo dopo
+            averlo urtato
+    tc[s] = tempo medio tra due urti
+    '''
+    def __init__(self, d, np, su, sf, nr, tc):
+        self.n_p = np
+        self.su = su
+        self.sf = sf
+        self.d = d
+        self.pos_y = 1
+        self.nr = nr
+        self.tc = tc
+        self.y = 1
+        self.passi = 1
+        self.yar = 1
+        self.yas = 1
+        self.td = 1
+
+    def passaggio(self, d, n_p):
+        '''
+        funzione che simula il passaggio di una particella carica
+        attraverso il rivelatore a gas
+
+        il numero di coppie elettrone-ione primarie (quelle generate dalla
+        particella) fluttua secondo la statistica di Poisson
+        e in media sono n_p
+
+        la posizione delle coppie elettrone-ione create è distribuita con
+        probabilità uniforme lungo lo spessore della camera
+        '''
+        #generiamo il numero di coppie elettrone-ione generate dalla
+        #particella
+
+        #usiamo np.random.poisson(lam=x)
+        #lam = x è la media dell'evento, è il valore atteso della distribuzione
+        self.n_p = np.random.poisson(n_p)
+
+        #generiamo la posizione delle coppie create
+        self.pos_y = np.random.uniform(low=0, high=d, size=self.n_p)
+        return self.n_p, self.pos_y
+
+    def diffusione(self, d, su, sf, pos_y, nr):
+        '''
+        questa funzione simula la diffusione degli elettroni attraverso
+        il rivelatore (verso i fili).
+        Ogni elettrone urta contro gli altri atomi del gas, ed ha
+        probabilità costante di "rimbalzare" (essere deflesso) in una qualsiasi
+        direzione. Cioè ogni elettrone segue un cammino randomico con
+        di probabilità uniforme e con passo pari a s_u
+
+        ogni elettrone è anche soggetto al campo elettrico dei fili,
+        che aggiunge uno spostamento verticale sempre diretto verso i cavi,
+        e di passo pari a s_f
+
+        quando gli elettroni vengono rivelati (distanza dai fili <= 0,1mm)
+        o quando gli elettroni vengono assorbiti da un atomo, con una
+        probabilità di assorbimento pari a 1/n_r
+        '''
+        #calcoliamo il cammino per ogni elettrone, usiamo i dizionari
+        self.y = {} #teniamo traccia solo dello spostamento lungo y
+        self.passi = np.empty(0)#tiene conto del numero di passi di ogni cammino
+        #creiamo due dizionari ulteriori
+        self.yar = {}  #uno per gli elettroni che vengono rivelati
+        self.yas = {}  #uno per gli elettroni che vengono assorbiti
+        for i in range(len(pos_y)):
+            yi = np.array([pos_y[i]])
+            while True:
+                ph = np.random.uniform(low=0, high=360, size=1)
+                phi = np.radians(ph)
+                
+                dyi = su*np.sin(phi)
+                yi = np.append(yi, yi[-1] + dyi + sf)
+                #ad ogni passo calcoliamo anche la probabilità che l'elettrone
+                #venga assorbito
+                #generiamo un numero random tra 0 ed 1 con distribuzione
+                #uniforme
+                #se il numero è minore di 1/n_r l'elettrone viene assorbito
+                #altrimenti no
+                n = np.random.random(1)
+                if yi[-1] >= (d - 0.01):
+                    self.passi = np.append(self.passi, len(yi))
+                    self.yar.update({i : yi})
+                    break
+                elif n <= 1/nr:
+                    self.passi = np.append(self.passi, len(yi))
+                    self.yas.update({i : yi})
+                    break
+            self.y.update({i : yi})
+        return self.y, self.passi, self.yar, self.yas, len(self.yar), len(self.yas)
+
+    def tempo(self, tc, N):
+        '''
+        è una funzione che dato il tempo medio tra due urti tc, ed il
+        numero di passi N (cioè di urti) avvenuti durante il cammino di un
+        elettrone, calcola il suo tempo medio di deriva t_d
+
+        N = numero di passi (cioè di urti) avvenuti durante il cammino
+            consideriamo solo gli elettroni che arrivano ai fili e
+            vengono rivelati
+        '''
+        self.td = tc*N
+        return self.td
+        
+
+
+
+A = np.empty(0)
+B = np.empty(0)
+for i in range(0, 1000):
+    a = np.random.poisson(1)
+    b = np.random.poisson(5)
+    A = np.append(A, a)
+    B = np.append(B, b)
+
+plt.hist(A, bins=200, label = 'A')
+plt.hist(B, bins=200, label = 'B')
+plt.legend()
+#plt.show()
+
+sys.path.append('/home/lunlun/MCF/metodi-computazionali-fisica/E10')

@@ -1,0 +1,100 @@
+#questo è un modulo
+
+# crea un cammino casuale in 2 dimensioni
+
+import numpy as np
+import sys
+import prob_2 as p2
+
+
+def cammino(s, N):
+    # questa funzione produce un cammino casuale in 2 dimensioni
+    # a partire da un passo fisso s e dal numero di passi da percorrere N
+
+
+    # s = passo
+    # N = numero passi
+
+    # voglio che la probabilità di fare un passo in qualsiasi direzione
+    # (individuata dall'angolo phi) sia uniforme
+    phi = np.random.uniform(low = 0, high = 360, size = N)
+    
+    delta_x = np.zeros(N)
+    delta_y = np.zeros(N)
+    for i in range(N):
+        delta_x[i] = s * np.cos(phi[i])
+        delta_y[i] = s * np.sin(phi[i])
+
+    d_x = np.zeros(N)  #ogni passo parte dal punto in cui si è arrivati    
+    d_x[0] = delta_x[0]    #con il passo precedente
+    d_y = np.zeros(N)  #questi array rappresentano la distanza lungo x e y
+    d_y[0] = delta_y[0]    #dal punto iniziale ad ogni passo
+
+    for i in range(1, N):
+        d_x[i] = d_x[i - 1] + delta_x[i]
+        d_y[i] = d_y[i - 1] + delta_y[i]
+
+
+    return delta_x, delta_y, d_x, d_y
+
+#aggiungiamo una funzione per generare un cammino in 2D
+#ma con l'angolo x (o phi) che ha probabilità di essere estratto pari
+#alla seconda distribuzione
+# P(x) = (1/4)*sin(x/2)
+
+def cammino2(s, N):
+    '''
+    questa funzione genera un cammino in 2D, estraendo l'angolo phi
+    dalla distribuzione di probabilità scritta sopra
+
+    s = lunghezza del passo
+    N = numero di passi
+    phi = angolo
+    '''
+    #estraiamo gli angoli phi
+    #e li convertiamo in radianti
+    phi = p2.C_in(N)
+   # phi = np.radians(ph)
+
+    #calcoliamo l'array dei punti x e y che il cammino raggiunge durante
+    #il percorso
+    x = np.array([0])
+    y = np.array([0])
+    for i in range(1, N):
+        dx = s*np.cos(phi[i])
+        dy = s*np.sin(phi[i])
+        x = np.append(x, x[i - 1] + dx)
+        y = np.append(y, y[i - 1] + dy)
+
+    return x, y, dx, dy
+
+def cammino3(s):
+    '''
+    è una funzione analoga a quella simmetrica (cammino), ma aggiunge ad ogni
+    passo un contributo costante positivo sf lungo l'asse x ad ogni passo
+
+    questo cammino non ha un numero N di passi definito a priori.
+    una volta che la coordinata x raggiunge il valore s*200 il cammino
+    si arresta
+
+    s = passo
+    '''
+    x = np.array([0])
+    y = np.array([0])
+    while True:
+        #per ogni ciclo generiamo un angolo phi in radianti con
+        #distribuzione di probabilità uniforme
+        ph = np.random.uniform(low=0, high=360, size=1)
+        phi = np.radians(ph)
+        
+        dx = s*np.cos(phi)
+        dy = s*np.sin(phi)
+        x = np.append(x, x[-1] + dx)
+        y = np.append(y, y[-1] + dy)
+        if x[-1] >= s*200:
+            break
+    return x, y
+
+sys.path.append('home/lunlun/MCF/metodi-computazionali-fisica/E10')
+
+

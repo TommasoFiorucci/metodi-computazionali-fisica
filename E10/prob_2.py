@@ -1,0 +1,39 @@
+import numpy as np
+import sys
+import matplotlib.pyplot as plt
+
+#questo è un modulo che ha lo scopo di generare la distribuzione di probabilità
+# P(x) = (1/4)*sin(x/2)
+
+def C_in(N):
+    '''
+    la distribuzione da generare è
+    P(x) = (1/4)*sin(x/2)  con  0 <= x < 2*π
+
+    la cumulativa è
+
+    s = C(x) = (1/2)*(cos(x/2) - 1)
+
+    la funzione inversa è
+
+    x = C^-1(s) = 2*arccos(1 -2*s)
+
+    x = angolo
+
+    generiamo un numero casuale s con distribuzione di probabilità costante
+    a partire da s calcoliamo x = C^-1(s) che è un numero casuale con
+    distribuzione di probabilità uguale alla funzione ad argomento di C(x)
+    cioè P(x) scritta sopra in questo caso
+    '''
+    #generiamo i numeri casuali s con distribuzione di probabilità costante
+    #e compresi tra 0 ed 1
+    #a volte si usa y al posto di s, è solo formalismo in ogni caso
+    y = np.random.random(N)
+
+    return 2*np.arccos(1 - 2*y)
+
+#c = C_in(100000)
+#plt.hist(c, bins=100)
+#plt.show()
+
+sys.path.append('/home/lunlun/MCF/metodi-computazionali-fisica/E10')
